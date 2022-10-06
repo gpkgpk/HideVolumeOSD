@@ -25,18 +25,19 @@ namespace HideVolumeOSD
 		{
 			if (mutex.WaitOne(TimeSpan.Zero, true))
 			{
-				if ((args.GetLength(0) == 1))
+				if ((args.Length>0)) //TODO: add more args for positions
 				{
 					HideVolumeOSDLib lib = new HideVolumeOSDLib(null);
 
 					lib.Init();
 
-					if (args[0] == "-hide")
+					string arg0 = args[0].ToLower();
+					if (arg0 == "-hide")
 					{
 						lib.HideOSD();
 					}
 					else
-						if (args[0] == "-show")
+						if (arg0 == "-show")
 						{
 							lib.ShowOSD();
 						}

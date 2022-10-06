@@ -1,0 +1,12 @@
+C:\Users\gpk\Documents\Visual Studio Projects\HideVolumeOSD\x64\Release\HideVolumeOSD.exe.config
+C:\Users\gpk\Documents\Visual Studio Projects\HideVolumeOSD\x64\Release\HideVolumeOSD.exe
+C:\Users\gpk\Documents\Visual Studio Projects\HideVolumeOSD\x64\Release\HideVolumeOSD.pdb
+C:\Users\gpk\Documents\Visual Studio Projects\HideVolumeOSD\HideVolumeOSD\obj\x64\Release\HideVolumeOSDApp.csproj.AssemblyReference.cache
+C:\Users\gpk\Documents\Visual Studio Projects\HideVolumeOSD\HideVolumeOSD\obj\x64\Release\HideVolumeOSD.AboutBox.resources
+C:\Users\gpk\Documents\Visual Studio Projects\HideVolumeOSD\HideVolumeOSD\obj\x64\Release\HideVolumeOSD.DummyForm.resources
+C:\Users\gpk\Documents\Visual Studio Projects\HideVolumeOSD\HideVolumeOSD\obj\x64\Release\HideVolumeOSD.Properties.Resources.resources
+C:\Users\gpk\Documents\Visual Studio Projects\HideVolumeOSD\HideVolumeOSD\obj\x64\Release\HideVolumeOSDApp.csproj.GenerateResource.cache
+C:\Users\gpk\Documents\Visual Studio Projects\HideVolumeOSD\HideVolumeOSD\obj\x64\Release\HideVolumeOSDApp.csproj.CoreCompileInputs.cache
+C:\Users\gpk\Documents\Visual Studio Projects\HideVolumeOSD\HideVolumeOSD\obj\x64\Release\HideVolumeOSDApp.csproj.CopyComplete
+C:\Users\gpk\Documents\Visual Studio Projects\HideVolumeOSD\HideVolumeOSD\obj\x64\Release\HideVolumeOSD.exe
+C:\Users\gpk\Documents\Visual Studio Projects\HideVolumeOSD\HideVolumeOSD\obj\x64\Release\HideVolumeOSD.pdb
