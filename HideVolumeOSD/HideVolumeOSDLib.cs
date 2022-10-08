@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Windows;
 using System.Windows.Forms;
 
 namespace HideVolumeOSD
@@ -20,16 +21,17 @@ namespace HideVolumeOSD
         [DllImport("user32.dll", SetLastError = true)]
         static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
 
+        
+
         [DllImport("user32.dll")]
         static extern bool IsWindow(IntPtr hWnd);
 
         NotifyIcon ni;
 
         IntPtr hWndInject = IntPtr.Zero;
-
-        public HideVolumeOSDLib(NotifyIcon ni)
+        public enum WindowPosition
         {
-            this.ni = ni;
+            Default = -1, TopLeft, TopMiddle, TopRight, MiddleRight, BottomRight, BottomMiddle, BottomLeft, MiddleLeft, Center
         }
 
         private string _lpszClassHost;
@@ -38,15 +40,21 @@ namespace HideVolumeOSD
         private const string _lpszClassChild2 = "Windows.UI.Input.InputSite.WindowClass";
         private bool _isWindows11;
 
+        public HideVolumeOSDLib(NotifyIcon ni)
+        {
+            this.ni = ni;
+        }
+
+
         public void Init()
         {
             _isWindows11 = OSVersion.GetOSVersion().Version.Build >= 22000;// Win 11 build >=22k
 
             if (_isWindows11) //Win11 
             {
-                _lpszClassHost = "XamlExplorerHostIslandWindow"; //Win11 XamlExplorerHostIslandWindow
-                _lpszClassChild = "Windows.UI.Composition.DesktopWindowContentBridge"; //Win11 Windows.UI.Composition.DesktopWindowContentBridge
-                _lpszTitleChild = "DesktopWindowXamlSource"; //Win11 DesktopWindowXamlSource
+                _lpszClassHost = "XamlExplorerHostIslandWindow"; //Win11 top window
+                _lpszClassChild = "Windows.UI.Composition.DesktopWindowContentBridge"; //Win11 1st child
+                _lpszTitleChild = "DesktopWindowXamlSource"; //Win11 1st child title
             }
             else
             {
@@ -106,13 +114,25 @@ namespace HideVolumeOSD
                 // if this window has a child with class 'DirectUIHWND' it might be the volume OSD
 
                 hwndChild = FindWindowEx(hwndHost, IntPtr.Zero, _lpszClassChild, _lpszTitleChild);
+                if (_isWindows11 && hwndChild != IntPtr.Zero)//TODO: 3rd window check, 2nd child
+                {
+                    //check for child's child in Win11 w class "Windows.UI.Input.InputSite.WindowClass"
+                    hwndChild2 = FindWindowEx(hwndChild, IntPtr.Zero, _lpszClassChild2, "");
+
+                    if (hwndChild == IntPtr.Zero)
+                    {
+                        hwndChild = IntPtr.Zero; //2nd child window didn't match, this is not the window we're looking for
+                    }
+
+                }
+
                 if (hwndChild != IntPtr.Zero)
                 {
-                    //if (_isWindows11)
-                    //{
-                    //    //check for child's child in Win11
-                    //    hwndChild2 = FindWindowEx(hwndChild, IntPtr.Zero, _lpszClassChild2, "");
-                    //}
+                    if (_isWindows11)
+                    {
+                        //check for child's child in Win11
+                        hwndChild2 = FindWindowEx(hwndChild, IntPtr.Zero, _lpszClassChild2, "");
+                    }
                     // if this is the only pair we are sure
 
                     if (pairCount == 0)
@@ -127,6 +147,7 @@ namespace HideVolumeOSD
                     if (pairCount > 1)
                     {
                         MessageBox.Show("Severe error: Multiple pairs found!", "HideVolumeOSD");
+                        //Application.Exit();
                         return IntPtr.Zero;
                     }
                 }
@@ -175,13 +196,12 @@ namespace HideVolumeOSD
             if (ni != null)
                 ni.Icon = Resources.Icon;
         }
-
+        
         private static void ShowVolumeWindow()
         {
             keybd_event((byte)Keys.VolumeMute, 0, 0, 0);
-            System.Threading.Thread.Sleep(10);
+            System.Threading.Thread.Sleep(100);
             keybd_event((byte)Keys.VolumeMute, 0, 0, 0);
-            System.Threading.Thread.Sleep(10);
         }
     }
 }
