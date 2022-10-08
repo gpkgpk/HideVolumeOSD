@@ -121,18 +121,14 @@ namespace HideVolumeOSD
 
                     if (hwndChild == IntPtr.Zero)
                     {
-                        hwndChild = IntPtr.Zero; //2nd child window didn't match, this is not the window we're looking for
+                        hwndChild = IntPtr.Zero; //2nd child window didn't match for Win11, this is not the window we're looking for
                     }
 
                 }
 
                 if (hwndChild != IntPtr.Zero)
                 {
-                    if (_isWindows11)
-                    {
-                        //check for child's child in Win11
-                        hwndChild2 = FindWindowEx(hwndChild, IntPtr.Zero, _lpszClassChild2, "");
-                    }
+
                     // if this is the only pair we are sure
 
                     if (pairCount == 0)
