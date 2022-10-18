@@ -20,19 +20,21 @@ namespace HideVolumeOSD
 
         [DllImport("user32.dll", SetLastError = true)]
         static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
-
         
-
         [DllImport("user32.dll")]
+        static extern bool GetClientRect(IntPtr hWnd, out RECT lpRect);
+        [StructLayout(LayoutKind.Sequential)]
+        public struct RECT
+        {
+            public int Left, Top, Right, Bottom;
+        }
+
+            [DllImport("user32.dll")]
         static extern bool IsWindow(IntPtr hWnd);
 
         NotifyIcon ni;
 
         IntPtr hWndInject = IntPtr.Zero;
-        public enum WindowPosition
-        {
-            Default = -1, TopLeft, TopMiddle, TopRight, MiddleRight, BottomRight, BottomMiddle, BottomLeft, MiddleLeft, Center
-        }
 
         private string _lpszClassHost;
         private string _lpszClassChild;
@@ -104,7 +106,6 @@ namespace HideVolumeOSD
             IntPtr hwndHost = IntPtr.Zero;
             IntPtr hwndChild = IntPtr.Zero;
             IntPtr hwndChild2 = IntPtr.Zero;
-
             int pairCount = 0;
 
             // search for all windows with class 'NativeHWNDHost'
@@ -114,23 +115,31 @@ namespace HideVolumeOSD
                 // if this window has a child with class 'DirectUIHWND' it might be the volume OSD
 
                 hwndChild = FindWindowEx(hwndHost, IntPtr.Zero, _lpszClassChild, _lpszTitleChild);
-                if (_isWindows11 && hwndChild != IntPtr.Zero)//TODO: 3rd window check, 2nd child
+                if (_isWindows11 && hwndChild != IntPtr.Zero) //Win11 additional checks to find proper OSD
                 {
                     //check for child's child in Win11 w class "Windows.UI.Input.InputSite.WindowClass"
                     hwndChild2 = FindWindowEx(hwndChild, IntPtr.Zero, _lpszClassChild2, "");
-
-                    if (hwndChild == IntPtr.Zero)
+                    if (hwndChild2 != IntPtr.Zero)
                     {
-                        hwndChild = IntPtr.Zero; //2nd child window didn't match for Win11, this is not the window we're looking for
+                        ShowWindow(hwndHost, 9); // SW_RESTORE any previously minimized OSD windows from this app so we can look at the proper restored Client Window Rect and see if it is the OSD or other zero sized windows. Skipping style check for SW_MINIMIZED, maybe l8r
+                        if (GetClientRect(hwndHost, out RECT rect))
+                        {
+                            if (rect.Top == 0 && rect.Left == 0 && rect.Bottom == 0 && rect.Right == 0) //Windows 11 other windows with same classes etc but zero size so a 4th check is needed. These may be Widget hosts or other. Test for zero RECT size and exclude from paircount if zero; this is not the OSD you're looking for. 
+                            {
+                                hwndChild = IntPtr.Zero;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        hwndChild = IntPtr.Zero; //2nd child window didn't match or was zero size anomaly for Win11, this is not the window we're looking for
                     }
 
                 }
 
-                if (hwndChild != IntPtr.Zero)
+                if (hwndChild != IntPtr.Zero)//we have a match
                 {
-
                     // if this is the only pair we are sure
-
                     if (pairCount == 0)
                     {
                         hwndRet = hwndHost;
@@ -142,8 +151,7 @@ namespace HideVolumeOSD
 
                     if (pairCount > 1)
                     {
-                        MessageBox.Show("Severe error: Multiple pairs found!", "HideVolumeOSD");
-                        //Application.Exit();
+                        MessageBox.Show("Severe error: Multiple pairs found!\nTry restarting the Windows Desktop's Explorer.exe process or Sign Out and try again", "HideVolumeOSD", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         return IntPtr.Zero;
                     }
                 }
@@ -171,6 +179,7 @@ namespace HideVolumeOSD
                 Init();
             }
 
+            //SW_HIDE 0, SW_MINIMIZE 6
             ShowWindow(hWndInject, 6); // SW_MINIMIZE
 
             if (ni != null)
@@ -184,6 +193,7 @@ namespace HideVolumeOSD
                 Init();
             }
 
+            //SW_SHOW 5, SW_RESTORE 6
             ShowWindow(hWndInject, 9); // SW_RESTORE
 
             // show window on the screen
@@ -192,7 +202,7 @@ namespace HideVolumeOSD
             if (ni != null)
                 ni.Icon = Resources.Icon;
         }
-        
+
         private static void ShowVolumeWindow()
         {
             keybd_event((byte)Keys.VolumeMute, 0, 0, 0);
